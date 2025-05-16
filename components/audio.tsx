@@ -49,22 +49,24 @@ const INTERVALS = [
   "Octave",
 ] as const;
 
+// Initialize a synth connected to the main output (speakers)
+const synth = new Tone.Synth().toDestination();
+
 export default function Audio() {
-  const [isAudioReady, setIsAudioReady] = useState(false);
+  const [audioIsReady, setAudioIsReady] = useState(false);
   const [firstNote, setFirstNote] = useState(0);
-  const [secondNote, setSecondNote] = useState(0);
+  const [interval, setInterval] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
 
-  const selectedAnswerIsCorrect = selectedAnswer === secondNote - firstNote;
+  const secondNote = firstNote + interval;
+  const selectedAnswerIsCorrect = selectedAnswer && selectedAnswer === interval;
 
   // Generate a new problem
   const generateProblem = () => {
-    const first = Math.floor(Math.random() * 12); // 0 to 11
-    const interval = Math.floor(Math.random() * 12) + 1; // 1 to 12
-    const second = first + interval;
-
-    setFirstNote(first);
-    setSecondNote(second);
+    const newFirstNote = Math.floor(Math.random() * 12); // 0 to 11
+    const newInterval = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    setFirstNote(newFirstNote);
+    setInterval(newInterval);
     setSelectedAnswer(null);
   };
 
@@ -73,20 +75,14 @@ export default function Audio() {
     generateProblem();
   }, []);
 
-  // Check the user's answer
-  const checkAnswer = (num: number) => {
-    setSelectedAnswer(num);
-
-    const correctDifference = secondNote - firstNote;
-  };
-
-  // Initialize a synth connected to the main output (speakers)
-  const synth = new Tone.Synth().toDestination();
+  useEffect(() => {
+    if (audioIsReady) playNotes();
+  }, [firstNote]);
 
   const playNotes = async () => {
-    if (isAudioReady) {
-      await Tone.start(); // Required to start the AudioContext due to browser restrictions
-      setIsAudioReady(true);
+    if (!audioIsReady) {
+      await Tone.start(); // this is required due to browser restrictions - browsers will not play any audio until a user clicks something
+      setAudioIsReady(true);
       console.log("Audio is ready");
     }
     const now = Tone.now();
@@ -112,14 +108,14 @@ export default function Audio() {
           </div>
 
           <div className="space-y-3">
-            <div className="font-medium text-center">What is the interval played? Select your answer:</div>
+            <div className="text-center">What is the interval played? Select your answer:</div>
 
             <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
                 <Button
                   key={num}
                   variant={selectedAnswer !== num ? "outline" : selectedAnswerIsCorrect ? "success" : "destructive"}
-                  onClick={() => checkAnswer(num)}
+                  onClick={() => setSelectedAnswer(num)}
                 >
                   {INTERVALS[num]}
                 </Button>
@@ -138,9 +134,6 @@ export default function Audio() {
             </span>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between gap-2">
-          <div className="flex gap-2"></div>
-        </CardFooter>
       </Card>
     </div>
   );
