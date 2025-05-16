@@ -68,7 +68,8 @@ export default function () {
   // Generate a new problem
   const generateProblem = () => {
     const newFirstNote = Math.floor(Math.random() * 12); // 0 to 11
-    const newInterval = Math.floor(Math.random() * 14) + 1; // 1 to 14
+    let newInterval = Math.floor(Math.random() * 14) + 1; // 1 to 14
+    if (newInterval <= 7 && Math.random() > 0.5) newInterval += 7;
     setFirstNote(newFirstNote);
     setInterval(newInterval);
     setSelectedAnswer(null);
@@ -95,7 +96,7 @@ export default function () {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Intervals Practice</CardTitle>
