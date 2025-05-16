@@ -51,11 +51,11 @@ const INTERVALS = [
 
 export default function Audio() {
   const [isAudioReady, setIsAudioReady] = useState(false);
-
   const [firstNote, setFirstNote] = useState(0);
   const [secondNote, setSecondNote] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<null | { correct: boolean; message: string }>(null);
+
+  const selectedAnswerIsCorrect = selectedAnswer === secondNote - firstNote;
 
   // Generate a new problem
   const generateProblem = () => {
@@ -66,7 +66,6 @@ export default function Audio() {
     setFirstNote(first);
     setSecondNote(second);
     setSelectedAnswer(null);
-    setFeedback(null);
   };
 
   // Initialize on first render
@@ -75,22 +74,10 @@ export default function Audio() {
   }, []);
 
   // Check the user's answer
-  const checkAnswer = () => {
-    if (selectedAnswer === null) return;
+  const checkAnswer = (num: number) => {
+    setSelectedAnswer(num);
 
     const correctDifference = secondNote - firstNote;
-
-    if (selectedAnswer === correctDifference) {
-      setFeedback({
-        correct: true,
-        message: "Correct! Great job!",
-      });
-    } else {
-      setFeedback({
-        correct: false,
-        message: "That's not right. Try again or check the answer.",
-      });
-    }
   };
 
   // Initialize a synth connected to the main output (speakers)
@@ -115,48 +102,44 @@ export default function Audio() {
           <CardDescription className="text-center">Identify the interval between two notes</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex justify-center gap-12 text-4xl font-bold">
-            <div className="text-center">
-              <div className="mb-2 text-sm font-normal text-muted-foreground">First Note</div>
-              <div>{NOTES[firstNote]}</div>
-            </div>
-            <div className="text-center">
-              <div className="mb-2 text-sm font-normal text-muted-foreground">Second Note</div>
-              <div>{NOTES[secondNote]}</div>
-            </div>
-          </div>
-          <div className="flex justify-center">
-            <Button onClick={playNotes}>Play Notes</Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant={selectedAnswerIsCorrect ? "secondary" : "default"} onClick={playNotes}>
+              Play Notes
+            </Button>
+            <Button variant="default" disabled={!selectedAnswerIsCorrect} onClick={generateProblem}>
+              Next Question
+            </Button>
           </div>
 
           <div className="space-y-3">
             <div className="font-medium text-center">What is the interval played? Select your answer:</div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
-                <Button key={num} variant={selectedAnswer === num ? "default" : "outline"} className="h-12 w-full" onClick={() => setSelectedAnswer(num)}>
+                <Button
+                  key={num}
+                  variant={selectedAnswer !== num ? "outline" : selectedAnswerIsCorrect ? "success" : "destructive"}
+                  onClick={() => checkAnswer(num)}
+                >
                   {INTERVALS[num]}
                 </Button>
               ))}
             </div>
           </div>
 
-          {feedback && (
-            <div className={`flex items-center gap-2 rounded-md p-3 ${feedback.correct ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-              {feedback.correct ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-              <span>{feedback.message}</span>
-            </div>
-          )}
+          <div
+            className={`flex items-center gap-2 rounded-md p-3 ${
+              !selectedAnswer ? "" : selectedAnswerIsCorrect ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+            }`}
+          >
+            {!selectedAnswer ? <></> : selectedAnswerIsCorrect ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+            <span className="h-5">
+              {!selectedAnswer ? "" : selectedAnswerIsCorrect ? `Correct! (${NOTES[firstNote]}, ${NOTES[secondNote]})` : "That's not right. Try again."}
+            </span>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-between gap-2">
-          <div className="flex gap-2">
-            <Button onClick={checkAnswer} disabled={selectedAnswer === null}>
-              Check Answer
-            </Button>
-            <Button variant="secondary" onClick={generateProblem} className="px-3">
-              Next Question
-            </Button>
-          </div>
+          <div className="flex gap-2"></div>
         </CardFooter>
       </Card>
     </div>
