@@ -2,8 +2,8 @@
 
 import dynamic from "next/dynamic";
 
-const ClientOnlyComponent = dynamic(() => import("@/components/audio"), { ssr: false });
+const ClientOnlyGame = dynamic(() => import("@/components/game"), { ssr: false });
 
-export default function MathDifferenceApp() {
-  return <ClientOnlyComponent />;
+export default function () {
+  return <ClientOnlyGame />;
 }

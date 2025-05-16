@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, XCircle } from "lucide-react";
 import * as Tone from "tone";
 
 const NOTES = [
-  "C4",
+  "C4", // idx 0
   "C#4",
   "D4",
   "D#4",
@@ -19,7 +19,7 @@ const NOTES = [
   "A4",
   "A#4",
   "B4",
-  "C5",
+  "C5", // idx 12
   "C#5",
   "D5",
   "D#5",
@@ -31,6 +31,8 @@ const NOTES = [
   "A5",
   "A#5",
   "B5",
+  "C6", // idx 24
+  "C#6",
 ] as const;
 
 const INTERVALS = [
@@ -46,13 +48,15 @@ const INTERVALS = [
   "Major 6th",
   "Minor 7th",
   "Major 7th",
-  "Octave",
+  "Octave", // idx 12
+  "Minor 9th",
+  "Major 9th",
 ] as const;
 
 // Initialize a synth connected to the main output (speakers)
 const synth = new Tone.Synth().toDestination();
 
-export default function Audio() {
+export default function () {
   const [audioIsReady, setAudioIsReady] = useState(false);
   const [firstNote, setFirstNote] = useState(0);
   const [interval, setInterval] = useState(0);
@@ -64,7 +68,7 @@ export default function Audio() {
   // Generate a new problem
   const generateProblem = () => {
     const newFirstNote = Math.floor(Math.random() * 12); // 0 to 11
-    const newInterval = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    const newInterval = Math.floor(Math.random() * 14) + 1; // 1 to 14
     setFirstNote(newFirstNote);
     setInterval(newInterval);
     setSelectedAnswer(null);
@@ -108,10 +112,10 @@ export default function Audio() {
           </div>
 
           <div className="space-y-3">
-            <div className="text-center">What is the interval played? Select your answer:</div>
+            <div className="text-base text-center">Select your answer:</div>
 
             <div className="grid grid-cols-2 gap-2">
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
+              {Array.from({ length: 14 }, (_, i) => i + 1).map((num) => (
                 <Button
                   key={num}
                   variant={selectedAnswer !== num ? "outline" : selectedAnswerIsCorrect ? "success" : "destructive"}
