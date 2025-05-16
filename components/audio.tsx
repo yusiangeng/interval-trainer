@@ -52,23 +52,21 @@ const INTERVALS = [
 export default function Audio() {
   const [isAudioReady, setIsAudioReady] = useState(false);
 
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
+  const [firstNote, setFirstNote] = useState(0);
+  const [secondNote, setSecondNote] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<null | { correct: boolean; message: string }>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
 
   // Generate a new problem
   const generateProblem = () => {
-    const newX = Math.floor(Math.random() * 12); // 0 to 11
-    const newN = Math.floor(Math.random() * 12) + 1; // 1 to 12
-    const newY = newX + newN;
+    const first = Math.floor(Math.random() * 12); // 0 to 11
+    const interval = Math.floor(Math.random() * 12) + 1; // 1 to 12
+    const second = first + interval;
 
-    setX(newX);
-    setY(newY);
+    setFirstNote(first);
+    setSecondNote(second);
     setSelectedAnswer(null);
     setFeedback(null);
-    setShowAnswer(false);
   };
 
   // Initialize on first render
@@ -80,7 +78,7 @@ export default function Audio() {
   const checkAnswer = () => {
     if (selectedAnswer === null) return;
 
-    const correctDifference = y - x;
+    const correctDifference = secondNote - firstNote;
 
     if (selectedAnswer === correctDifference) {
       setFeedback({
@@ -98,36 +96,38 @@ export default function Audio() {
   // Initialize a synth connected to the main output (speakers)
   const synth = new Tone.Synth().toDestination();
 
-  const playNote = async () => {
+  const playNotes = async () => {
     if (isAudioReady) {
       await Tone.start(); // Required to start the AudioContext due to browser restrictions
       setIsAudioReady(true);
       console.log("Audio is ready");
     }
     const now = Tone.now();
-    synth.triggerAttackRelease(NOTES[x], "8n", now); // play note for x
-    synth.triggerAttackRelease(NOTES[y], "8n", now + 1); // play note for y with delay
+    synth.triggerAttackRelease(NOTES[firstNote], "8n", now); // play note for x
+    synth.triggerAttackRelease(NOTES[secondNote], "8n", now + 1); // play note for y with delay
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Math Difference Practice</CardTitle>
-          <CardDescription className="text-center">Find the difference between the two numbers</CardDescription>
+          <CardTitle className="text-2xl text-center">Intervals Practice</CardTitle>
+          <CardDescription className="text-center">Identify the interval between two notes</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-center gap-12 text-4xl font-bold">
             <div className="text-center">
               <div className="mb-2 text-sm font-normal text-muted-foreground">First Note</div>
-              <div>{NOTES[x]}</div>
+              <div>{NOTES[firstNote]}</div>
             </div>
             <div className="text-center">
               <div className="mb-2 text-sm font-normal text-muted-foreground">Second Note</div>
-              <div>{NOTES[y]}</div>
+              <div>{NOTES[secondNote]}</div>
             </div>
           </div>
-          <Button onClick={playNote}>Play Note</Button>
+          <div className="flex justify-center">
+            <Button onClick={playNotes}>Play Notes</Button>
+          </div>
 
           <div className="space-y-3">
             <div className="font-medium text-center">What is the interval played? Select your answer:</div>
@@ -147,19 +147,14 @@ export default function Audio() {
               <span>{feedback.message}</span>
             </div>
           )}
-
-          {showAnswer && <div className="rounded-md bg-blue-50 p-3 text-blue-700 text-center">The correct answer is: {y - x}</div>}
         </CardContent>
         <CardFooter className="flex justify-between gap-2">
-          <Button variant="outline" onClick={() => setShowAnswer(true)} disabled={!!feedback?.correct || showAnswer}>
-            Show Answer
-          </Button>
           <div className="flex gap-2">
             <Button onClick={checkAnswer} disabled={selectedAnswer === null}>
               Check Answer
             </Button>
             <Button variant="secondary" onClick={generateProblem} className="px-3">
-              <RefreshCw className="h-4 w-4" />
+              Next Question
             </Button>
           </div>
         </CardFooter>
